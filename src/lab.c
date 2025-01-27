@@ -1,15 +1,19 @@
 #include "lab.h"
 
-static const int INVALID_INDEX = -1;
-
+/**
+ * Create a new list with callbacks for data handling
+ * 
+ * @param destroy_data Function that frees list data
+ * @param compare_to Function that compares list elements
+ * @return list_t* Pointer to the newly allocated list or NULL if allocation failed
+ */
 list_t *list_init(void (*destroy_data)(void *), int (*compare_to)(const void *, const void *))
 {
     // Allocate memory for the list
     list_t *list = malloc(sizeof(list_t));
 
     // Check if the list was allocated
-    if (!list)
-    {
+    if (!list) {
         return NULL;
     }
 
@@ -17,8 +21,7 @@ list_t *list_init(void (*destroy_data)(void *), int (*compare_to)(const void *, 
     list->head = malloc(sizeof(node_t));
 
     // Check if the head node was allocated
-    if (!list->head)
-    {
+    if (!list->head) {
         free(list);
         return NULL;
     }
@@ -38,104 +41,137 @@ list_t *list_init(void (*destroy_data)(void *), int (*compare_to)(const void *, 
     return list;
 }
 
+/**
+ * Destroy the list and all associated data
+ * 
+ * @param list Pointer to the list that needs to be destroyed
+ */
 void list_destroy(list_t **list)
 {
-    if (!list || !(*list))
-    {
+    // Validate the list
+    if (!list || !(*list) || !(*list)->head) {
         return;
     }
 
-    list_t *currentList = *list;
-    node_t *currentNode = currentList->head->next;
+    // Grab first node in the list
+    node_t *current_node = (*list)->head->next;
 
     // Free all the nodes in the list
-    while (currentNode != currentList->head)
-    {
-        currentList->destroy_data(currentNode->data);
-        node_t *tempNode = currentNode;
-        currentNode = currentNode->next;
-        free(tempNode);
+    while (current_node != (*list)->head) {
+        node_t *next_node = current_node;
+        if (!(*list)->destroy_data) {
+            (*list)->destroy_data(current_node->data);
+        }
+        free(current_node);
+        current_node = next_node;
     }
 
-    // free the head node and the list
-    free(currentList->head);
-    free(currentList);
+    // Free the head node and the list
+    free((*list)->head);
+    free(*list);
     *list = NULL;
 }
 
+/**
+ * Adds data to the front of the list
+ * 
+ * @param list Pointer to an existing list
+ * @param data The data to add
+ * @return A pointer to the list
+ */
 list_t *list_add(list_t *list, void *data)
 {
     // Validate Data
-    if (!list || !list->head)
-    {
+    if (!list || !list->head) {
         return NULL;
     }
 
-    // allocate new node
+    // Allocate new node
     node_t *newNode = malloc(sizeof(node_t));
 
-    // set the data of the new node
+    // Check if the new node was allocated
+    if (!newNode) {
+        return NULL;
+    }
+
+    // Set the data of the new node
     newNode->data = data;
 
-    // set the next and prev pointers of the new node
+    // Set the next and prev pointers of the new node
     newNode->next = list->head->next;
     newNode->prev = list->head;
 
-    // set the prev pointer of the node after the head to the new node
+    // Set the prev pointer of the node after the head to the new node
     list->head->next->prev = newNode;
 
-    // set the next pointer of the head to the new node
+    // Set the next pointer of the head to the new node
     list->head->next = newNode;
     list->size++;
 
     return list;
 }
 
+/**
+ * Removes the data at the specified index. If index is invalid
+ * then this function does nothing and returns NULL
+ * 
+ * @param list Pointer to an existing list
+ * @param index The index of the data to remove
+ * @return void* The data that was removed or NULL if nothing was removed
+ */
 void *list_remove_index(list_t *list, size_t index)
 {
-    if (!list || !list->head || index >= list->size)
-    {
+    if (!list || !list->head || index >= list->size) {
         return NULL;
     }
 
-    node_t *currentNode = list->head->next;
+    node_t *current_node = list->head->next;
 
-    for (size_t i = 0; i < index; i++)
-    {
-        currentNode = currentNode->next;
+    for (size_t i = 0; i < index; i++) {
+        current_node = current_node->next;
     }
 
-    void *data = currentNode->data;
-    currentNode->prev->next = currentNode->next;
-    currentNode->next->prev = currentNode->prev;
-    free(currentNode);
+    void *data = current_node->data;
+
+    // Remove the node from the list
+    current_node->prev->next = current_node->next;
+    current_node->next->prev = current_node->prev;
+
+    // Free the node
+    free(current_node);
+
+    // Decrement the size of the list
     list->size--;
 
     return data;
 }
 
+/**
+ * Returns the index of the data in the list. 
+ * If the data is not in the list then -1 is returned
+ * 
+ * @param list Pointer to an existing list
+ * @param data The data to search for
+ * @return The index of the item if found or -1 if not
+ */
 int list_indexof(list_t *list, void *data)
 {
-
     // Check for valid list
-    if (!list || !list->head)
-    {
-        return INVALID_INDEX;
+    if (!list || !list->head) {
+        return -1;
     }
 
-    // Grab the head of the list
-    node_t *currentNode = list->head->next;
+    // Start at first data node
+    node_t *current_node = list->head->next;
     int index = 0;
 
-    while (currentNode != list->head)
-    {
-        if (list->compare_to(currentNode->data, data) == 0)
-        {
+    while (current_node != list->head) {
+        if (list->compare_to(current_node->data, data) == 0) {
             return index;
         }
-        currentNode = currentNode->next;
+        current_node = current_node->next;
         index++;
     }
 
-    return INVALID_INDEX;
+    return -1;
 }

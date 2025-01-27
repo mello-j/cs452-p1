@@ -1,22 +1,27 @@
 #include "harness/unity.h"
 #include "../src/lab.h"
+
 static list_t *lst_ = NULL;
+
 static int *alloc_data(int i)
 {
     int *rval = (int *)malloc(sizeof(int));
     *rval = i;
     return rval;
 }
+
 static void destroy_data(void *data)
 {
     free(data);
 }
+
 static int compare_to(const void *a, const void *b)
 {
     int fst = *(int *)a;
     int snd = *(int *)b;
     return fst - snd;
 }
+
 static void populate_list(void)
 {
     for (int i = 0; i < 5; i++)
@@ -24,14 +29,17 @@ static void populate_list(void)
         list_add(lst_, alloc_data(i));
     }
 }
+
 void setUp(void)
 {
     lst_ = list_init(destroy_data, compare_to);
 }
+
 void tearDown(void)
 {
     list_destroy(&lst_);
 }
+
 void test_create_destroy(void)
 {
     list_t *lst = NULL;
@@ -40,7 +48,7 @@ void test_create_destroy(void)
     TEST_ASSERT_FALSE(lst->head == NULL);
     TEST_ASSERT_TRUE(lst->size == 0);
     TEST_ASSERT_TRUE(lst->head->data == NULL);
-    // Make sure the function pointers are pointing to the correct fuctions
+    // Make sure the function pointers are pointing to the correct functions
     TEST_ASSERT_TRUE(lst->destroy_data == destroy_data);
     TEST_ASSERT_TRUE(lst->compare_to == compare_to);
     // Make sure we are a circular linked list
@@ -50,6 +58,7 @@ void test_create_destroy(void)
     list_destroy(&lst);
     TEST_ASSERT_TRUE(lst == NULL);
 }
+
 void test_add1(void)
 {
     list_add(lst_, alloc_data(1));
@@ -64,6 +73,7 @@ void test_add1(void)
     TEST_ASSERT_TRUE(*((int *)lst_->head->next->data) == 1);
     TEST_ASSERT_TRUE(*((int *)lst_->head->prev->data) == 1);
 }
+
 void test_add2(void)
 {
     list_add(lst_, alloc_data(1));
@@ -80,6 +90,7 @@ void test_add2(void)
     TEST_ASSERT_TRUE(*((int *)lst_->head->next->data) == 2);
     TEST_ASSERT_TRUE(*((int *)lst_->head->prev->data) == 1);
 }
+
 void test_removeIndex0(void)
 {
     populate_list();
@@ -101,6 +112,7 @@ void test_removeIndex0(void)
         curr = curr->prev;
     }
 }
+
 void test_removeIndex3(void)
 {
     populate_list();
@@ -117,7 +129,7 @@ void test_removeIndex3(void)
     }
     // Check the last one
     TEST_ASSERT_TRUE(*((int *)curr->data) == 0);
-    // Set the curr back one node so we can check prev links
+    // Set curr back one node so we can check prev links
     curr = curr->prev;
     for (int i = 1; i <= 3; i++)
     {
@@ -125,6 +137,7 @@ void test_removeIndex3(void)
         curr = curr->prev;
     }
 }
+
 void test_removeIndex4(void)
 {
     populate_list();
@@ -146,6 +159,7 @@ void test_removeIndex4(void)
         curr = curr->prev;
     }
 }
+
 void test_invaidIndex(void)
 {
     populate_list();
@@ -165,6 +179,7 @@ void test_invaidIndex(void)
         curr = curr->prev;
     }
 }
+
 void test_removeAll(void)
 {
     populate_list();
@@ -175,12 +190,13 @@ void test_removeAll(void)
         TEST_ASSERT_TRUE(*rval == i);
         free(rval);
     }
-    // Make sure we back to default
+    // Make sure we are back to default
     TEST_ASSERT_FALSE(lst_->head->next == NULL);
     TEST_ASSERT_FALSE(lst_->head->prev == NULL);
     TEST_ASSERT_TRUE(lst_->head->next == lst_->head->prev);
     TEST_ASSERT_TRUE(lst_->size == 0);
 }
+
 void test_indexOf0(void)
 {
     populate_list();
@@ -189,6 +205,7 @@ void test_indexOf0(void)
     size_t idx = list_indexof(lst_, data);
     TEST_ASSERT_TRUE(idx == 0);
 }
+
 void test_indexOf3(void)
 {
     populate_list();
@@ -198,6 +215,7 @@ void test_indexOf3(void)
     TEST_ASSERT_TRUE(idx == 3);
     free(data);
 }
+
 void test_notInList(void)
 {
     populate_list();
@@ -206,6 +224,7 @@ void test_notInList(void)
     TEST_ASSERT_EQUAL_INT64(-1, idx);
     free(data);
 }
+
 int main(void)
 {
     UNITY_BEGIN();
