@@ -160,7 +160,7 @@ void test_removeIndex4(void)
     }
 }
 
-void test_invaidIndex(void)
+void test_invalidIndex(void)
 {
     populate_list();
     void *rval = list_remove_index(lst_, 666);
@@ -225,6 +225,59 @@ void test_notInList(void)
     free(data);
 }
 
+// Additional tests
+void test_init_failure(void)
+{
+    list_t *lst = list_init(NULL, NULL);
+    TEST_ASSERT_NULL(lst);
+    lst = list_init(NULL, compare_to);
+    TEST_ASSERT_NULL(lst);
+
+    lst = list_init(destroy_data, NULL);
+    TEST_ASSERT_NULL(lst);
+    free(lst);
+}
+
+void test_add_null(void)
+{
+    list_t *lst = list_init(destroy_data, compare_to);
+    TEST_ASSERT_NOT_NULL(lst);
+    TEST_ASSERT_NOT_NULL(list_add(lst, NULL));
+    TEST_ASSERT_NULL(lst->head->next->data);
+    TEST_ASSERT_EQUAL_INT(1, lst->size);
+    list_destroy(&lst);
+}
+
+void test_remove_last(void)
+{
+  populate_list(); 
+  // List should be 4->3->2->1->0
+  size_t last = lst_->size - 1;
+  void *data = list_remove_index(lst_, last);
+  TEST_ASSERT_NOT_NULL(data);
+  TEST_ASSERT_EQUAL_INT(0, *(int *)data);
+  TEST_ASSERT_EQUAL_INT(4, lst_->size);
+  free(data);
+}
+
+void test_null_list(void)
+{
+   TEST_ASSERT_NULL(list_remove_index(NULL, 0));
+   TEST_ASSERT_NULL(list_add(NULL, NULL));
+}
+
+void test_index_of_all(void) 
+{
+  populate_list(); 
+  // List should be 4->3->2->1->0
+  node_t *curr = lst_->head->next;
+  for (int i = 4; i >= 0; i--)
+    {
+       TEST_ASSERT_EQUAL_INT(4-i, list_indexof(lst_, curr->data));
+       curr = curr->next;
+    }
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -234,10 +287,17 @@ int main(void)
     RUN_TEST(test_removeIndex0);
     RUN_TEST(test_removeIndex3);
     RUN_TEST(test_removeIndex4);
-    RUN_TEST(test_invaidIndex);
+    RUN_TEST(test_invalidIndex);
     RUN_TEST(test_removeAll);
     RUN_TEST(test_indexOf0);
     RUN_TEST(test_indexOf3);
     RUN_TEST(test_notInList);
+    //Additional tests
+    RUN_TEST(test_init_failure);
+    RUN_TEST(test_add_null);
+    RUN_TEST(test_remove_last);
+    RUN_TEST(test_null_list);
+    RUN_TEST(test_index_of_all);
+
     return UNITY_END();
 }

@@ -9,8 +9,14 @@
  */
 list_t *list_init(void (*destroy_data)(void *), int (*compare_to)(const void *, const void *))
 {
+    //Evaluate for null callbacks.
+    if (!destroy_data || !compare_to)
+    {
+        return NULL;
+    }
+    
     // Allocate memory for the list
-    list_t *list = malloc(sizeof(list_t));
+    list_t *list = (list_t *)malloc(sizeof(list_t));
 
     // Check if the list was allocated
     if (!list) {
@@ -18,7 +24,7 @@ list_t *list_init(void (*destroy_data)(void *), int (*compare_to)(const void *, 
     }
 
     // Allocate memory for the head node
-    list->head = malloc(sizeof(node_t));
+    list->head = (node_t *)malloc(sizeof(node_t));
 
     // Check if the head node was allocated
     if (!list->head) {
@@ -58,8 +64,9 @@ void list_destroy(list_t **list)
 
     // Free all the nodes in the list
     while (current_node != (*list)->head) {
-        node_t *next_node = current_node;
-        if (!(*list)->destroy_data) {
+        node_t *next_node = current_node->next;
+
+        if ((*list)->destroy_data) {
             (*list)->destroy_data(current_node->data);
         }
         free(current_node);
@@ -87,25 +94,25 @@ list_t *list_add(list_t *list, void *data)
     }
 
     // Allocate new node
-    node_t *newNode = malloc(sizeof(node_t));
+    node_t *new_node = (node_t *)malloc(sizeof(node_t));
 
     // Check if the new node was allocated
-    if (!newNode) {
+    if (!new_node) {
         return NULL;
     }
 
     // Set the data of the new node
-    newNode->data = data;
+    new_node->data = data;
 
     // Set the next and prev pointers of the new node
-    newNode->next = list->head->next;
-    newNode->prev = list->head;
+    new_node->next = list->head->next;
+    new_node->prev = list->head;
 
     // Set the prev pointer of the node after the head to the new node
-    list->head->next->prev = newNode;
+    list->head->next->prev = new_node;
 
     // Set the next pointer of the head to the new node
-    list->head->next = newNode;
+    list->head->next = new_node;
     list->size++;
 
     return list;
