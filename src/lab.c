@@ -66,7 +66,8 @@ void list_destroy(list_t **list)
     while (current_node != (*list)->head) {
         node_t *next_node = current_node->next;
 
-        if ((*list)->destroy_data) {
+        //check for destroy data and check for null data (great tip from the code-review.)
+        if ((*list)->destroy_data && current_node->data) {
             (*list)->destroy_data(current_node->data);
         }
         free(current_node);

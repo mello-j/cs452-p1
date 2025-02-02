@@ -226,6 +226,11 @@ void test_notInList(void)
 }
 
 // Additional tests
+/* Test that list initialization fails gracefully when given invalid parameters:
+ * - Should return NULL when both function pointers are NULL
+ * - Should return NULL when only destroy_data is NULL 
+ * - Should return NULL when only compare_to is NULL
+ */
 void test_init_failure(void)
 {
     list_t *lst = list_init(NULL, NULL);
@@ -238,6 +243,11 @@ void test_init_failure(void)
     free(lst);
 }
 
+/* Test that adding NULL data to the list works correctly:
+ * - List should accept NULL as valid data
+ * - Node should be created with NULL data pointer
+
+ */
 void test_add_null(void)
 {
     list_t *lst = list_init(destroy_data, compare_to);
@@ -248,6 +258,11 @@ void test_add_null(void)
     list_destroy(&lst);
 }
 
+/* Test removing the last element from the list:
+ * - Should successfully remove and return last element's data
+ * - List size should decrease by 1
+ * - Returned data should match expected value
+ */
 void test_remove_last(void)
 {
   populate_list(); 
@@ -260,12 +275,20 @@ void test_remove_last(void)
   free(data);
 }
 
+/* Test that list operations handle NULL list pointer gracefully:
+ * - Remove operation should return NULL
+ * - Add operation should return NULL
+ */
 void test_null_list(void)
 {
    TEST_ASSERT_NULL(list_remove_index(NULL, 0));
    TEST_ASSERT_NULL(list_add(NULL, NULL));
 }
 
+/* Test that list_indexof correctly finds position of all elements:
+ * - Should return correct index for each element in sequence
+ * - Verifies list traversal and comparison functionality
+ */
 void test_index_of_all(void) 
 {
   populate_list(); 
